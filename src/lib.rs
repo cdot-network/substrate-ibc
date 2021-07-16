@@ -69,6 +69,7 @@ mod client;
 mod connection;
 mod port;
 mod routing;
+mod event;
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub struct Any {
@@ -182,23 +183,21 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		ClientCreated,
-		ClientUpdated,
-		ClientMisbehaviourReceived,
-		ConnOpenInit,
-		ConnOpenTry,
-		ConnOpenAck,
-		ConnOpenConfirm,
-		PortBound(u8),
-		PortReleased,
-		ChanOpenInit,
-		ChanOpenTry,
-		ChanOpenAck,
-		ChanOpenConfirm,
-		SendPacket(u64, Vec<u8>, u32, Vec<u8>, H256, Vec<u8>, H256),
-		RecvPacket(u64, Vec<u8>, u32, Vec<u8>, H256, Vec<u8>, H256, Vec<u8>),
-		PacketRecvReceived,
-		AcknowledgePacket,
+		CreateClient(event::client_event::CreateClient),
+	}
+
+
+	impl<T: Config> From<ibc::events::IbcEvent> for Event<T> {
+		fn from(ibc_event: ibc::events::IbcEvent) -> Self {
+			use ibc::events::IbcEvent;
+
+			match ibc_event {
+				IbcEvent::CreateClient(value) => {
+					Event::CreateClient(value.into())
+				}
+				_ => unreachable!()
+			}
+		}
 	}
 
 	// Errors inform users that something went wrong.
@@ -246,9 +245,20 @@ pub mod pallet {
 					value: message.value.clone(),
 				})
 				.collect();
-			let result = ibc::ics26_routing::handler::deliver(&mut ctx, messages);
+			let result = ibc::ics26_routing::handler::deliver(&mut ctx, messages).unwrap();
 
 			log::info!("result: {:?}", result);
+
+			use ibc::events::IbcEvent;
+
+			for event in result.iter() {
+				match event {
+					IbcEvent::CreateClient(value) => {
+						Self::deposit_event(Event::CreateClient(value.clone().into()));
+					}
+					_ => unreachable!()
+				}
+			}
 
 			Ok(())
 		}

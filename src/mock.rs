@@ -60,36 +60,6 @@ impl system::Config for Test {
 pub struct ModuleCallbacksImpl;
 
 impl pallet_ibc::ModuleCallbacks for ModuleCallbacksImpl {
-	fn on_chan_open_try(
-		index: usize,
-		order: pallet_ibc::ChannelOrder,
-		connection_hops: Vec<H256>,
-		port_identifier: Vec<u8>,
-		channel_identifier: H256,
-		counterparty_port_identifier: Vec<u8>,
-		counterparty_channel_identifier: H256,
-		version: Vec<u8>,
-		counterparty_version: Vec<u8>,
-	) {
-		unimplemented!()
-	}
-
-	fn on_chan_open_ack(
-		index: usize,
-		port_identifier: Vec<u8>,
-		channel_identifier: H256,
-		version: Vec<u8>,
-	) {
-		unimplemented!()
-	}
-
-	fn on_chan_open_confirm(index: usize, port_identifier: Vec<u8>, channel_identifier: H256) {
-		unimplemented!()
-	}
-
-	fn on_recv_packet(index: usize, packet: pallet_ibc::Packet) {
-		unimplemented!()
-	}
 }
 
 impl pallet_ibc::Config for Test {
@@ -97,7 +67,7 @@ impl pallet_ibc::Config for Test {
 	type ModuleCallbacks = ModuleCallbacksImpl;
 }
 
-// Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
-}
+// // Build genesis storage according to the mock runtime.
+// pub fn new_test_ext() -> sp_io::TestExternalities {
+// 	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+// }
