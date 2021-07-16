@@ -69,7 +69,7 @@ mod client;
 mod connection;
 mod port;
 mod routing;
-mod event;
+pub mod event;
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub struct Any {
@@ -183,21 +183,7 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		CreateClient(event::client_event::CreateClient),
-	}
-
-
-	impl<T: Config> From<ibc::events::IbcEvent> for Event<T> {
-		fn from(ibc_event: ibc::events::IbcEvent) -> Self {
-			use ibc::events::IbcEvent;
-
-			match ibc_event {
-				IbcEvent::CreateClient(value) => {
-					Event::CreateClient(value.into())
-				}
-				_ => unreachable!()
-			}
-		}
+		InnerEvent(event::SubstrateEvent)
 	}
 
 	// Errors inform users that something went wrong.
@@ -254,7 +240,7 @@ pub mod pallet {
 			for event in result.iter() {
 				match event {
 					IbcEvent::CreateClient(value) => {
-						Self::deposit_event(Event::CreateClient(value.clone().into()));
+						Self::deposit_event(Event::InnerEvent(value.clone().into()));
 					}
 					_ => unreachable!()
 				}

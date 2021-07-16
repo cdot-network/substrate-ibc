@@ -99,4 +99,28 @@ pub mod client_event {
 
 }
 
+#[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug)]
+pub enum SubstrateEvent {
+    CreateClient(client_event::CreateClient)
+}
+
+impl From<ibc::ics02_client::events::CreateClient> for SubstrateEvent {
+    fn from(client_event: ibc::ics02_client::events::CreateClient) -> Self {
+        SubstrateEvent::CreateClient(client_event.into())
+    }
+}
+
+impl From<ibc::events::IbcEvent> for SubstrateEvent {
+    fn from(ibc_event: ibc::events::IbcEvent) -> Self {
+        use ibc::events::IbcEvent;
+
+        match ibc_event {
+            IbcEvent::CreateClient(value) => {
+                SubstrateEvent::CreateClient(value.into())
+            }
+            _ => unreachable!()
+        }
+    }
+}
+
 
